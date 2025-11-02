@@ -1,9 +1,83 @@
-.App {
-  text-align: center;
+/* --- ZÁKLADNÍ NASTAVENÍ A TYPOGRAFIE --- */
+body {
+  margin: 0;
+  /* Změna fontu na něco výraznějšího, např. 'Roboto' (pokud je dostupný) */
+  font-family: 'Roboto', sans-serif; 
+  /* Výraznější, hlubší pozadí pro větší kontrast s bílými kartami */
+  background-color: #e5e7eb; /* Světle šedá */
+  color: #333;
+  /* Pro lepší vizuální zážitek na mobilu */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
+.App {
+  /* Tato třída je nyní ignorována, protože obsah je zarovnán Tailwindem v JSX */
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* --- TŘÍDY NÍZKÉ PRIORIT Y(ponechány pro přípa d, že by byly v JSX použity) --- */
+
+.App-header {
+  /* Styling hlavičky by měl být řízen Tailwindem v JSX */
+  width: 100%;
+  max-width: 1200px;
+  padding: 15px 30px;
+  background-color: #ffffff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05); 
+  border-radius: 12px;
+  margin-bottom: 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.Content-card {
+    /* Styling karty by měl být řízen Tailwindem v JSX */
+    width: 100%;
+    max-width: 600px;
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e0e0e0;
+}
+
+/* Zbytek stylů ponecháváme jako fallback, ale primárně byste měl stylovat v JSX s Tailwindem. */
+
+/* --- INTERAKTIVNÍ PRVKY (TLAČÍTKA/ODKAZY) --- */
+.App-link, button {
+  text-decoration: none;
+  color: #4f46e5;
+  font-weight: 600;
+  padding: 10px 15px;
+  border-radius: 8px;
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+  border: 2px solid transparent;
+}
+
+/* Primární tlačítko */
+.App-link.primary, button.primary {
+    background-color: #4f46e5;
+    color: white;
+    box-shadow: 0 4px 8px rgba(79, 70, 229, 0.4);
+}
+
+.App-link.primary:hover, button.primary:hover {
+    background-color: #4338ca; 
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(79, 70, 229, 0.6);
+}
+
+/* --- ANIMACE LOGA (ponecháno pro úplnost) --- */
 .App-logo {
-  height: 40vmin;
+  height: 80px; 
   pointer-events: none;
 }
 
@@ -13,26 +87,22 @@
   }
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
-.App-link {
-  color: #61dafb;
-}
-
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);
   }
   to {
     transform: rotate(360deg);
+  }
+}
+
+/* --- RESPONSIVITA --- */
+@media (max-width: 600px) {
+  .App-header {
+    padding: 15px 15px;
+  }
+  .Content-card {
+    padding: 20px;
+    border-radius: 16px;
   }
 }
