@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
-import { BrowserRouter, Routes, Route, useParams } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useParams, Link, useNavigate } from 'react-router-dom';
 // Zde jsou ikonky, které používáme v aplikaci
-import { Trash2, User, UserPlus, Save, Check, Filter, X, LogOut, ArrowLeft, ArrowRight } from 'lucide-react';
+import { Trash2, User, UserPlus, Save, Check, Filter, X, LogOut, ArrowLeft, ArrowRight, Plus, ShoppingBag, Users, ChevronRight, PlusCircle } from 'lucide-react'; 
 
 // --- DATA SIMULACE ---
 // Jan Novák je VLASTNÍK (ownerId)
@@ -28,6 +28,23 @@ const INITIAL_STATE = {
     { id: 3, text: 'Jablka', resolved: false, date: Date.now() - 1000 },
     { id: 4, text: 'Vejce', resolved: false, date: Date.now() },
   ],
+};
+
+// NOVÁ DEFINICE PRO MAPU SEZNAMŮ (pro AppWrapper)
+const INITIAL_LISTS = {
+  [INITIAL_LIST_ID]: INITIAL_STATE,
+  'xyz987': {
+    ownerId: SIMULATED_USERS.MEMBER.id, // Petra Svobodová je vlastník druhého seznamu
+    listName: 'Potřeby pro psa',
+    members: [
+        { id: SIMULATED_USERS.MEMBER.id, name: SIMULATED_USERS.MEMBER.name },
+        { id: SIMULATED_USERS.OWNER.id, name: SIMULATED_USERS.OWNER.name } // Jan Novák je členem
+    ],
+    items: [
+        { id: 10, text: 'Granule', resolved: false, date: Date.now() - 1500 },
+        { id: 11, text: 'Hračka', resolved: true, date: Date.now() - 500 }
+    ],
+  }
 };
 // --- KONEC DAT SIMULACE ---
 
@@ -63,12 +80,42 @@ const ConfirmationModal = ({ isOpen, title, message, onConfirm, onCancel }) => {
   );
 };
 
+
 // ----------------------------------------------------
-// KOMPONENTA 2: LIST DETAIL ROUTE
-// TATO KOMPONENTA OBSAHUJE VŠECHNU LOGIKU SEZNAMU
+// KOMPONENTA 2: LIST DETAIL ROUTE (UPRAVENO PRO allLists)
 // ----------------------------------------------------
-const ListDetailRoute = ({ currentUser, listState, setListState, setCurrentUser }) => {
+const ListDetailRoute = ({ currentUser, allLists, setAllLists, setCurrentUser }) => {
   const { listId } = useParams();
+  const navigate = useNavigate();
+  
+  // ZÍSKÁNÍ STAVU KONKRÉTNÍHO SEZNAMU Z MAPY
+  const listState = allLists[listId];
+  
+  // Funkce, která umožňuje ListDetailRoute modifikovat JEDEN konkrétní seznam
+  const setListState = (updateFn) => {
+    setAllLists(prevLists => ({
+        ...prevLists,
+        [listId]: updateFn(prevLists[listId])
+    }));
+  };
+
+  // KONTROLA EXISTENCE/PŘÍSTUPU
+  if (!listState) {
+    return (
+        <div className="p-8 max-w-lg mx-auto mt-12 bg-white rounded-xl shadow-2xl text-center">
+            <h1 className="text-3xl font-extrabold text-red-600 mb-4">Seznam nenalezen</h1>
+            <p className="text-gray-600 mb-6">Nákupní seznam s ID **{listId}** nebyl nalezen nebo k němu nemáte přístup.</p>
+            <Link 
+                to="/" 
+                className="inline-flex items-center space-x-2 px-6 py-3 bg-indigo-600 text-white font-semibold rounded-full shadow-lg hover:bg-indigo-700 transition-colors transform hover:scale-105"
+            >
+                <ArrowLeft size={18} /> <span>Zpět na přehled</span>
+            </Link>
+        </div>
+    );
+  }
+
+  // Původní stavy komponenty
   const [editingName, setEditingName] = useState(false);
   const [newName, setNewName] = useState(listState.listName);
   const [newMemberName, setNewMemberName] = useState('');
@@ -130,7 +177,7 @@ const ListDetailRoute = ({ currentUser, listState, setListState, setCurrentUser 
       targetId: currentUser.id,
       targetName: currentUser.name,
       title: 'Potvrzení odchodu',
-      message: `Opravdu chcete opustit nákupní seznam "${listState.listName}"?`,
+      message: `Opravdu chcete opustit nákupní seznam "${listState.listName}"? Po potvrzení budete přesměrováni na přehled.`,
     });
   };
 
@@ -140,13 +187,9 @@ const ListDetailRoute = ({ currentUser, listState, setListState, setCurrentUser 
       ...prev,
       members: prev.members.filter(m => m.id !== currentUser.id),
     }));
-    // Zde by měla následovat navigace na jinou stránku (např. /list/mine),
-    // ale pro tuto simulaci stačí uživatele "odhlašovat" na ČLENSKOU roli, aby se dostal ven.
-    // Zde jen zavřeme modal a ponecháme stav (pro jednoduchost).
     setModalData({ isOpen: false, type: null, targetId: null, targetName: null });
-
-    // Alternativně: Přepnout uživatele do simulované role ČLEN, který není v seznamu
-    setCurrentUser(SIMULATED_USERS.MEMBER);
+    // Přesměrování na přehled seznamů
+    navigate('/'); 
   };
 
 
@@ -211,9 +254,6 @@ const ListDetailRoute = ({ currentUser, listState, setListState, setCurrentUser 
   };
 
 
-  // ----------------------------------------------------
-  // RENDER SEZNAMU
-  // ----------------------------------------------------
   return (
     <div className="p-4 sm:p-8 max-w-4xl mx-auto min-h-screen bg-gray-50">
       {/* Modaly */}
@@ -366,7 +406,7 @@ const ListDetailRoute = ({ currentUser, listState, setListState, setCurrentUser 
                 className="p-3 bg-green-600 text-white rounded-lg shadow-md hover:bg-green-700 transition-colors"
                 title="Přidat položku"
               >
-                <UserPlus size={20} /> {/* Použito pro Plus ikonu */}
+                <Plus size={20} /> 
               </button>
             </div>
           </div>
@@ -432,13 +472,158 @@ const ListDetailRoute = ({ currentUser, listState, setListState, setCurrentUser 
   );
 };
 
+// --- NOVÉ KOMPONENTY PRO PŘEHLED SEZNAMŮ ---
+
+// ----------------------------------------------------
+// KOMPONENTA 4: KARTA SEZNAMU PRO PŘEHLED
+// ----------------------------------------------------
+const ListCard = ({ list, listId, isOwner, deleteList }) => {
+    const unresolvedCount = list.items.filter(item => !item.resolved).length;
+
+    const handleDelete = (e) => {
+        e.preventDefault(); // Zabrání navigaci na detail
+        if (window.confirm(`Opravdu chcete smazat seznam "${list.listName}"? Tato akce je nevratná.`)) {
+            deleteList(listId);
+        }
+    };
+
+    return (
+        <Link 
+            to={`/list/${listId}`} 
+            className="block p-6 bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 border-l-4 border-indigo-500 hover:border-indigo-700"
+        >
+            <div className="flex justify-between items-start">
+                <div>
+                    <h3 className="text-xl font-bold text-gray-800 mb-2">{list.listName}</h3>
+                    <p className="text-sm text-gray-500 flex items-center">
+                        <Users size={14} className="mr-1" />
+                        Členů: {list.members.length} 
+                        {isOwner && <span className="ml-2 font-semibold text-indigo-600">(Vlastní)</span>}
+                    </p>
+                </div>
+                
+                <div className={`flex flex-col items-end text-sm font-semibold p-2 rounded-full ${unresolvedCount > 0 ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}`}>
+                    {unresolvedCount}
+                    <span className="text-xs font-normal">nevyřešeno</span>
+                </div>
+            </div>
+
+            <div className="mt-4 flex justify-between items-center border-t pt-3">
+                <div className="text-sm text-indigo-600 flex items-center font-medium">
+                    Přejít na seznam <ChevronRight size={16} className="ml-1" />
+                </div>
+                {isOwner && (
+                    <button
+                        onClick={handleDelete}
+                        className="p-1 text-gray-400 hover:text-red-600 rounded-full transition-colors"
+                        title="Smazat seznam"
+                    >
+                        <Trash2 size={18} />
+                    </button>
+                )}
+            </div>
+        </Link>
+    );
+};
+
+// ----------------------------------------------------
+// KOMPONENTA 5: PŘEHLED SEZNAMŮ (OVERVIEW ROUTE)
+// ----------------------------------------------------
+const ShoppingListOverview = ({ allLists, currentUser, deleteList, createNewList }) => {
+  // Seznamy, kde je aktuální uživatel členem
+  const userLists = Object.entries(allLists)
+    .filter(([, list]) => list.members.some(m => m.id === currentUser.id))
+    .map(([id, list]) => ({ id, ...list }));
+
+  // Seznamy, které vlastní aktuální uživatel
+  const ownedLists = userLists.filter(list => list.ownerId === currentUser.id);
+  // Seznamy, kde je jen členem
+  const memberLists = userLists.filter(list => list.ownerId !== currentUser.id);
+
+  const [listName, setListName] = useState('');
+  const navigate = useNavigate();
+
+    const handleCreate = () => {
+        if (listName.trim() === '') return;
+
+        const newId = `list-${Date.now()}`;
+        
+        createNewList(newId, listName.trim(), currentUser.id, currentUser.name);
+
+        setListName('');
+        // Navigace na nově vytvořený seznam
+        navigate(`/list/${newId}`);
+    };
+
+  return (
+    <div className="p-4 sm:p-8 max-w-4xl mx-auto min-h-screen bg-gray-50">
+      <h1 className="text-3xl font-extrabold text-gray-800 mb-6 flex items-center">
+        <ShoppingBag size={30} className="mr-3 text-indigo-600" /> Moje nákupní seznamy
+      </h1>
+      
+      {userLists.length === 0 ? (
+        <div className="p-10 bg-white rounded-xl shadow-lg text-center">
+          <p className="text-gray-500 italic">Zatím nejste členem žádného seznamu. Vytvořte nový!</p>
+        </div>
+      ) : (
+        <>
+          {/* Vlastní seznamy */}
+          <h2 className="text-2xl font-bold text-gray-700 mt-8 mb-4">Seznamy, které vlastním ({ownedLists.length})</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {ownedLists.map(list => (
+              <ListCard key={list.id} listId={list.id} list={list} isOwner={true} deleteList={deleteList} />
+            ))}
+          </div>
+
+          {/* Seznamy, kde jsem členem */}
+          {memberLists.length > 0 && (
+            <>
+              <h2 className="text-2xl font-bold text-gray-700 mt-8 mb-4">Seznamy, kde jsem členem ({memberLists.length})</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {memberLists.map(list => (
+                  <ListCard key={list.id} listId={list.id} list={list} isOwner={false} />
+                ))}
+              </div>
+            </>
+          )}
+        </>
+      )}
+
+      {/* Přidání nového seznamu (Sloučeno z CreateListButton) */}
+      <div className="mt-10 p-6 bg-indigo-100 rounded-xl shadow-inner border border-indigo-200">
+            <h3 className="text-xl font-bold text-indigo-700 mb-4 flex items-center">
+                <PlusCircle size={22} className="mr-2" /> Vytvořit nový seznam
+            </h3>
+            <div className="flex space-x-3">
+                <input
+                    type="text"
+                    placeholder="Název nového seznamu (např. 'Párty jídlo')"
+                    value={listName}
+                    onChange={(e) => setListName(e.target.value)}
+                    className="flex-grow p-3 border border-indigo-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                />
+                <button
+                    onClick={handleCreate}
+                    disabled={listName.trim() === ''}
+                    className="p-3 bg-indigo-600 text-white rounded-lg shadow-md hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+                    title="Vytvořit"
+                >
+                    <Plus size={20} />
+                </button>
+            </div>
+      </div>
+    </div>
+  );
+};
+
 
 // ----------------------------------------------------
 // KOMPONENTA 3: HLAVNÍ KOMPONENTA (ROUTING A STAV)
 // ----------------------------------------------------
 const AppWrapper = () => {
   // --- GLOBÁLNÍ STAVY A SIMULACE PŘIHLÁŠENÍ ---
-  const [listState, setListState] = useState(INITIAL_STATE);
+  // Používáme mapu INITIAL_LISTS pro správu více seznamů
+  const [allLists, setAllLists] = useState(INITIAL_LISTS);
   const [currentUser, setCurrentUser] = useState(SIMULATED_USERS.OWNER); // Defaultně VLASTNÍK
 
   // Změna uživatele pro simulaci (přihlášení)
@@ -448,8 +633,31 @@ const AppWrapper = () => {
     } else if (userRole === 'MEMBER') {
       setCurrentUser(SIMULATED_USERS.MEMBER);
     }
-    // Po přihlášení resetujeme seznam pro čisté testování (volitelné)
-    setListState(INITIAL_STATE);
+    // Po přihlášení resetujeme seznamy pro čistou simulaci
+    setAllLists(INITIAL_LISTS);
+  };
+    
+  // Funkce pro vytvoření nového seznamu
+  const createNewList = (listId, listName, ownerId, ownerName) => {
+      const newList = {
+          ownerId: ownerId,
+          listName: listName,
+          members: [{ id: ownerId, name: ownerName }],
+          items: [],
+      };
+      setAllLists(prevLists => ({
+          ...prevLists,
+          [listId]: newList,
+      }));
+  };
+
+  // Funkce pro smazání seznamu
+  const deleteList = (listIdToDelete) => {
+      setAllLists(prevLists => {
+          const newLists = { ...prevLists };
+          delete newLists[listIdToDelete];
+          return newLists;
+      });
   };
 
   return (
@@ -457,7 +665,7 @@ const AppWrapper = () => {
       <div className="min-h-screen bg-gray-50 font-sans">
         {/* HEADER: SIMULACE PŘIHLÁŠENÍ */}
         <header className="p-4 sm:p-6 bg-gray-900 text-white shadow-lg flex justify-between items-center flex-wrap">
-          <div className="text-xl font-bold text-indigo-400">Simulace Přihlášení</div>
+          <div className="text-xl font-bold text-indigo-400">Simulace Nákupních Seznamů</div>
           <div className="flex items-center space-x-4 mt-2 sm:mt-0">
             <span className="text-sm">
               Přihlášen jako: <span className="font-semibold text-yellow-400">{currentUser.name} ({currentUser.role})</span>
@@ -466,48 +674,45 @@ const AppWrapper = () => {
               onClick={() => handleLogin('OWNER')}
               className="px-3 py-1 text-sm rounded-lg bg-indigo-600 hover:bg-indigo-700 transition-colors font-medium shadow-md"
             >
-              Přihlásit jako Vlastník
+              Vlastník
             </button>
             <button
               onClick={() => handleLogin('MEMBER')}
               className="px-3 py-1 text-sm rounded-lg bg-indigo-400 hover:bg-indigo-500 transition-colors font-medium shadow-md"
             >
-              Přihlásit jako Člen
+              Člen
             </button>
+            {/* Tlačítko pro návrat na přehled */}
+            <Link to="/" className="px-3 py-1 text-sm rounded-lg bg-gray-700 hover:bg-gray-600 transition-colors font-medium shadow-md flex items-center">
+                <ArrowLeft size={16} className="mr-1" /> Přehled
+            </Link>
           </div>
         </header>
 
         {/* ROUTES */}
         <main>
           <Routes>
-            {/* Zobrazí se při zadání adresy /list/cokoliv */}
+            {/* 1. DETAIL SEZNAMU (Cesta: /list/:listId) */}
             <Route
               path="/list/:listId"
               element={<ListDetailRoute
                 currentUser={currentUser}
-                listState={listState}
-                setListState={setListState}
+                allLists={allLists} 
+                setAllLists={setAllLists} 
                 setCurrentUser={setCurrentUser}
               />}
             />
 
-            {/* Úvodní stránka pro snadné testování */}
+            {/* 2. PŘEHLED SEZNAMŮ (Cesta: /) */}
             <Route
               path="/"
               element={
-                <div className="p-8 max-w-lg mx-auto mt-12 bg-white rounded-xl shadow-2xl text-center">
-                  <h1 className="text-3xl font-extrabold text-gray-800 mb-4">Vítejte v aplikaci!</h1>
-                  <p className="text-gray-600 mb-6">
-                    Pro zobrazení detailu seznamu zadejte do adresního řádku:
-                  </p>
-                  <a
-                    href={`/list/${INITIAL_LIST_ID}`}
-                    className="inline-flex items-center space-x-2 px-6 py-3 bg-indigo-600 text-white font-semibold rounded-full shadow-lg hover:bg-indigo-700 transition-colors transform hover:scale-105"
-                  >
-                    <span>/list/{INITIAL_LIST_ID}</span>
-                    <ArrowRight size={18} />
-                  </a>
-                </div>
+                <ShoppingListOverview
+                    allLists={allLists}
+                    currentUser={currentUser}
+                    deleteList={deleteList}
+                    createNewList={createNewList} // Pro tlačítko vytvořit nový seznam
+                />
               }
             />
           </Routes>
