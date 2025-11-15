@@ -1,108 +1,140 @@
 /* --- ZÁKLADNÍ NASTAVENÍ A TYPOGRAFIE --- */
 body {
-  margin: 0;
-  /* Změna fontu na něco výraznějšího, např. 'Roboto' (pokud je dostupný) */
-  font-family: 'Roboto', sans-serif; 
-  /* Výraznější, hlubší pozadí pro větší kontrast s bílými kartami */
-  background-color: #e5e7eb; /* Světle šedá */
-  color: #333;
-  /* Pro lepší vizuální zážitek na mobilu */
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  margin: 0;
+  /* Změna fontu na něco výraznějšího, např. 'Inter' pro moderní vzhled */
+  font-family: 'Inter', sans-serif; 
+  /* Výraznější, hlubší pozadí pro větší kontrast s bílými kartami */
+  background-color: #e5e7eb; /* Světle šedá */
+  color: #333;
+  /* Pro lepší vizuální zážitek na mobilu */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .App {
-  /* Tato třída je nyní ignorována, protože obsah je zarovnán Tailwindem v JSX */
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 0;
-  box-sizing: border-box;
+  /* Tato třída je nyní ignorována, protože obsah je zarovnán Tailwindem v JSX */
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-/* --- TŘÍDY NÍZKÉ PRIORIT Y(ponechány pro přípa d, že by byly v JSX použity) --- */
+/* --- TŘÍDY NÍZKÉ PRIORITY (ponechány pro případ, že by byly v JSX použity) --- */
 
 .App-header {
-  /* Styling hlavičky by měl být řízen Tailwindem v JSX */
-  width: 100%;
-  max-width: 1200px;
-  padding: 15px 30px;
-  background-color: #ffffff;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05); 
-  border-radius: 12px;
-  margin-bottom: 30px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  /* Styling hlavičky by měl být řízen Tailwindem v JSX */
+  width: 100%;
+  max-width: 1200px;
+  padding: 15px 30px;
+  background-color: #ffffff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05); 
+  border-radius: 12px;
+  margin-bottom: 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .Content-card {
-    /* Styling karty by měl být řízen Tailwindem v JSX */
-    width: 100%;
-    max-width: 600px;
-    background-color: #ffffff;
-    padding: 30px;
-    border-radius: 20px;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
-    border: 1px solid #e0e0e0;
+    /* Styling karty by měl být řízen Tailwindem v JSX */
+    width: 100%;
+    max-width: 600px;
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e0e0e0;
 }
 
 /* Zbytek stylů ponecháváme jako fallback, ale primárně byste měl stylovat v JSX s Tailwindem. */
 
 /* --- INTERAKTIVNÍ PRVKY (TLAČÍTKA/ODKAZY) --- */
 .App-link, button {
-  text-decoration: none;
-  color: #4f46e5;
-  font-weight: 600;
-  padding: 10px 15px;
-  border-radius: 8px;
-  transition: all 0.2s ease-in-out;
-  cursor: pointer;
-  border: 2px solid transparent;
+  text-decoration: none;
+  color: #4f46e5;
+  font-weight: 600;
+  padding: 10px 15px;
+  border-radius: 8px;
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+  border: 2px solid transparent;
 }
 
 /* Primární tlačítko */
 .App-link.primary, button.primary {
-    background-color: #4f46e5;
-    color: white;
-    box-shadow: 0 4px 8px rgba(79, 70, 229, 0.4);
+    background-color: #4f46e5;
+    color: white;
+    box-shadow: 0 4px 8px rgba(79, 70, 229, 0.4);
 }
 
 .App-link.primary:hover, button.primary:hover {
-    background-color: #4338ca; 
-    transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(79, 70, 229, 0.6);
+    background-color: #4338ca; 
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(79, 70, 229, 0.6);
+}
+
+/* --- NOVÉ STYLY PRO ARCHIVACE/OBNOVENÍ TLAČÍTKA --- */
+
+/* Tlačítko pro Archivaci (ikona Archiv) */
+button.archive-button {
+    color: #9ca3af; /* Šedá ikona */
+    padding: 8px;
+    background: none;
+    border: none;
+}
+
+button.archive-button:hover {
+    color: #6b7280; /* Tmavší šedá při najetí */
+    background-color: #f3f4f6; /* Světle šedé pozadí */
+    transform: none; /* Potlačení transformace z obecného button stylu */
+    box-shadow: none;
+}
+
+/* Tlačítko pro Obnovení z archivu (ikona RotateCcw) - používá se, když je seznam již archivován */
+button.unarchive-button {
+    color: #10b981; /* Zelená pro obnovení (obdoba bg-green-500) */
+    padding: 8px;
+    background: none;
+    border: none;
+}
+
+button.unarchive-button:hover {
+    color: #059669; /* Tmavší zelená při najetí */
+    background-color: #ecfdf5; /* Velmi světle zelené pozadí */
+    transform: none;
+    box-shadow: none;
 }
 
 /* --- ANIMACE LOGA (ponecháno pro úplnost) --- */
 .App-logo {
-  height: 80px; 
-  pointer-events: none;
+  height: 80px; 
+  pointer-events: none;
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
 }
 
 @keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* --- RESPONSIVITA --- */
 @media (max-width: 600px) {
-  .App-header {
-    padding: 15px 15px;
-  }
-  .Content-card {
-    padding: 20px;
-    border-radius: 16px;
-  }
+  .App-header {
+    padding: 15px 15px;
+  }
+  .Content-card {
+    padding: 20px;
+    border-radius: 16px;
+  }
 }

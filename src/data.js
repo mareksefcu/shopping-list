@@ -9,7 +9,7 @@ export const SIMULATED_USERS = {
 const INITIAL_LIST_ID = 'aBc123';
 
 const INITIAL_STATE_1 = {
-  ownerId: SIMULATED_USERS.OWNER.id,
+  ownerId: SIMULATED_USERS.OWNER.id, // Jan Novák je VLASTNÍK tohoto seznamu
   listName: 'Týdenní nákup',
   members: [
     { id: SIMULATED_USERS.OWNER.id, name: SIMULATED_USERS.OWNER.name },
@@ -22,11 +22,12 @@ const INITIAL_STATE_1 = {
     { id: 3, text: 'Jablka', resolved: false, date: Date.now() - 1000 },
     { id: 4, text: 'Vejce', resolved: false, date: Date.now() },
   ],
+  isArchived: false, // KLÍČOVÉ: Aktivní
 };
 
 const INITIAL_STATE_2 = {
   ownerId: SIMULATED_USERS.MEMBER.id, // Petra Svobodová je vlastník druhého seznamu
-  listName: 'Potřeby pro psa',
+  listName: 'Potřeby pro psa (Archiv)',
   members: [
     { id: SIMULATED_USERS.MEMBER.id, name: SIMULATED_USERS.MEMBER.name },
     { id: SIMULATED_USERS.OWNER.id, name: SIMULATED_USERS.OWNER.name } 
@@ -35,6 +36,7 @@ const INITIAL_STATE_2 = {
     { id: 10, text: 'Granule', resolved: false, date: Date.now() - 1500 },
     { id: 11, text: 'Hračka', resolved: true, date: Date.now() - 500 }
   ],
+  isArchived: true, // KLÍČOVÉ: Archivováno
 };
 
 
