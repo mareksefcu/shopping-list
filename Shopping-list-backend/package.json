@@ -1,0 +1,16 @@
+{
+  "name": "shopping-list-backend",
+  "version": "1.0.0",
+  "description": "Backend for Shopping List application",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "joi": "^17.9.2",
+    "bcrypt": "^5.1.0",
+    "jsonwebtoken": "^9.0.0",
+    "uuid": "^9.0.0"
+  }
+}
