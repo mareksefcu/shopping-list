@@ -4,13 +4,68 @@ const express = require('express');
 const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
 const { authenticateUser, authorizeListAccess } = require('../middleware/authMiddleware');
-const { createListInSchema, patchItemInSchema, addMemberInSchema } = require('../models/schemas');
-const db = require('../mocks/database_mock'); 
+const { createListInSchema, patchItemInSchema, addMemberInSchema, updateListInSchema } = require('../models/schemas');
+const db = require('../database/mongodb'); 
 
 // Všechny routy v tomto kontroleru používají autentizaci
 router.use(authenticateUser);
 
-// --- POST /list (Vytvořit nákupní list) ---
+// --- GET /list (Seznam všech nákupních listů) - shoppingList/list ---
+router.get('/', async (req, res) => {
+    try {
+        const lists = await db.findListsByUserId(req.userId);
+        
+        // DTO Out - zjednodušený výstup
+        const listsOutput = lists.map(list => ({
+            listId: list._id,
+            name: list.name,
+            description: list.description,
+            ownerId: list.ownerId,
+            itemsCount: list.items.length,
+            createdAt: list.createdAt,
+            isArchived: list.isArchived
+        }));
+        
+        return res.status(200).json({ 
+            result: "ok",
+            lists: listsOutput 
+        });
+    } catch (e) {
+        return res.status(500).json({ code: "list/serverError", message: "Internal server error." });
+    }
+});
+
+// --- GET /list/:listId (Získat jeden nákupní list) - shoppingList/get ---
+router.get('/:listId', async (req, res) => {
+    const { listId } = req.params;
+    
+    try {
+        // Autorizace: Musí být Zakladatel nebo Uživatel/Člen
+        const list = await authorizeListAccess(listId, req.userId, 'member');
+        
+        // DTO Out
+        return res.status(200).json({
+            result: "ok",
+            list: {
+                listId: list._id,
+                name: list.name,
+                description: list.description,
+                ownerId: list.ownerId,
+                memberIds: list.memberIds,
+                items: list.items,
+                createdAt: list.createdAt,
+                isArchived: list.isArchived
+            }
+        });
+    } catch (e) {
+        if (e.message.startsWith('Forbidden') || e.message === 'ListNotFound') {
+            return res.status(403).json({ code: e.message, message: "Access denied or list not found." });
+        }
+        return res.status(500).json({ code: "list/serverError", message: "Internal server error." });
+    }
+});
+
+// --- POST /list (Vytvořit nákupní list) - shoppingList/create ---
 router.post('/', async (req, res) => {
     const { error, value: listData } = createListInSchema.validate(req.body);
     if (error) {
@@ -83,6 +138,67 @@ router.patch('/:listId/items/:itemId', async (req, res) => {
     } catch (e) {
         if (e.message.startsWith('Forbidden') || e.message === 'ListNotFound') {
              return res.status(403).json({ code: e.message, message: "Access denied or list not found." });
+        }
+        return res.status(500).json({ code: "list/serverError", message: "Internal server error." });
+    }
+});
+
+// --- PUT /list/:listId (Upravit nákupní list) - shoppingList/update ---
+router.put('/:listId', async (req, res) => {
+    const { listId } = req.params;
+    const { error, value: updateData } = updateListInSchema.validate(req.body);
+    
+    if (error) {
+        return res.status(400).json({ code: "list/invalidDtoIn", message: "Validation error." });
+    }
+    
+    try {
+        // Autorizace: Povoleno pouze Zakladateli
+        await authorizeListAccess(listId, req.userId, 'owner');
+        
+        const updatedList = await db.updateListDocument(listId, updateData);
+        
+        // DTO Out
+        return res.status(200).json({
+            result: "ok",
+            list: {
+                listId: updatedList._id,
+                name: updatedList.name,
+                description: updatedList.description,
+                ownerId: updatedList.ownerId,
+                itemsCount: updatedList.items.length,
+                isArchived: updatedList.isArchived
+            }
+        });
+    } catch (e) {
+        if (e.message.startsWith('Forbidden') || e.message === 'ListNotFound') {
+            return res.status(403).json({ code: e.message, message: "Access denied or list not found." });
+        }
+        return res.status(500).json({ code: "list/serverError", message: "Internal server error." });
+    }
+});
+
+// --- DELETE /list/:listId (Smazat nákupní list) - shoppingList/delete ---
+router.delete('/:listId', async (req, res) => {
+    const { listId } = req.params;
+    
+    try {
+        // Autorizace: Povoleno pouze Zakladateli
+        await authorizeListAccess(listId, req.userId, 'owner');
+        
+        const deletedList = await db.deleteList(listId);
+        
+        if (!deletedList) {
+            return res.status(404).json({ code: "list/listNotFound", message: "List not found." });
+        }
+        
+        return res.status(200).json({ 
+            result: "ok", 
+            message: `List ${listId} deleted successfully.` 
+        });
+    } catch (e) {
+        if (e.message.startsWith('Forbidden') || e.message === 'ListNotFound') {
+            return res.status(403).json({ code: e.message, message: "Access denied or list not found." });
         }
         return res.status(500).json({ code: "list/serverError", message: "Internal server error." });
     }

@@ -5,6 +5,9 @@ const app = express();
 const authRouter = require('./controllers/authController');
 const listRouter = require('./controllers/listController');
 
+// Connect to MongoDB
+require('./config/database');
+
 // Middleware pro parsování JSON z těla požadavku
 app.use(express.json()); 
 

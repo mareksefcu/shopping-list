@@ -1,0 +1,390 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2024-01-15T12:00:00.000Z",
+  "__export_source": "insomnia.desktop.app:v2023.5.8",
+  "resources": [
+    {
+      "_id": "req_auth_register",
+      "parentId": "fld_auth",
+      "modified": 1705320000000,
+      "created": 1705320000000,
+      "url": "http://localhost:3000/auth/register",
+      "name": "Register",
+      "description": "Register a new user",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\",\n  \"name\": \"John Doe\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1705320000000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_auth_login",
+      "parentId": "fld_auth",
+      "modified": 1705320001000,
+      "created": 1705320001000,
+      "url": "http://localhost:3000/auth/login",
+      "name": "Login",
+      "description": "Login user and get JWT token",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1705320001000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_list_list",
+      "parentId": "fld_list",
+      "modified": 1705320002000,
+      "created": 1705320002000,
+      "url": "http://localhost:3000/list",
+      "name": "List All Shopping Lists",
+      "description": "Get all shopping lists for authenticated user (shoppingList/list)",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{token}}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1705320002000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_list_get",
+      "parentId": "fld_list",
+      "modified": 1705320003000,
+      "created": 1705320003000,
+      "url": "http://localhost:3000/list/:listId",
+      "name": "Get Shopping List",
+      "description": "Get a single shopping list by ID (shoppingList/get)",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "listId",
+          "value": "{{listId}}",
+          "description": "Shopping list ID"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{token}}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1705320003000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_list_create",
+      "parentId": "fld_list",
+      "modified": 1705320004000,
+      "created": 1705320004000,
+      "url": "http://localhost:3000/list",
+      "name": "Create Shopping List",
+      "description": "Create a new shopping list (shoppingList/create)",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"My Shopping List\",\n  \"description\": \"Weekly groceries\",\n  \"items\": [\n    {\n      \"name\": \"Milk\",\n      \"quantity\": 2,\n      \"unit\": \"l\"\n    },\n    {\n      \"name\": \"Bread\",\n      \"quantity\": 1,\n      \"unit\": \"ks\"\n    }\n  ]\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{token}}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1705320004000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_list_update",
+      "parentId": "fld_list",
+      "modified": 1705320005000,
+      "created": 1705320005000,
+      "url": "http://localhost:3000/list/:listId",
+      "name": "Update Shopping List",
+      "description": "Update a shopping list (shoppingList/update)",
+      "method": "PUT",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Updated Shopping List\",\n  \"description\": \"Updated description\",\n  \"isArchived\": false\n}"
+      },
+      "parameters": [
+        {
+          "name": "listId",
+          "value": "{{listId}}",
+          "description": "Shopping list ID"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{token}}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1705320005000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_list_delete",
+      "parentId": "fld_list",
+      "modified": 1705320006000,
+      "created": 1705320006000,
+      "url": "http://localhost:3000/list/:listId",
+      "name": "Delete Shopping List",
+      "description": "Delete a shopping list (shoppingList/delete)",
+      "method": "DELETE",
+      "body": {},
+      "parameters": [
+        {
+          "name": "listId",
+          "value": "{{listId}}",
+          "description": "Shopping list ID"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{token}}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1705320006000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_list_patch_item",
+      "parentId": "fld_list",
+      "modified": 1705320007000,
+      "created": 1705320007000,
+      "url": "http://localhost:3000/list/:listId/items/:itemId",
+      "name": "Update List Item",
+      "description": "Update an item in a shopping list",
+      "method": "PATCH",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Updated Item\",\n  \"quantity\": 3,\n  \"unit\": \"kg\",\n  \"done\": true\n}"
+      },
+      "parameters": [
+        {
+          "name": "listId",
+          "value": "{{listId}}",
+          "description": "Shopping list ID"
+        },
+        {
+          "name": "itemId",
+          "value": "{{itemId}}",
+          "description": "Item ID"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{token}}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1705320007000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_list_delete_member",
+      "parentId": "fld_list",
+      "modified": 1705320008000,
+      "created": 1705320008000,
+      "url": "http://localhost:3000/list/:listId/members/:memberId",
+      "name": "Remove Member",
+      "description": "Remove a member from a shopping list",
+      "method": "DELETE",
+      "body": {},
+      "parameters": [
+        {
+          "name": "listId",
+          "value": "{{listId}}",
+          "description": "Shopping list ID"
+        },
+        {
+          "name": "memberId",
+          "value": "{{memberId}}",
+          "description": "Member user ID"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{token}}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1705320008000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "fld_auth",
+      "parentId": "wrk_shopping_list",
+      "modified": 1705320009000,
+      "created": 1705320009000,
+      "name": "Authentication",
+      "description": "Authentication endpoints",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1705320009000,
+      "_type": "request_group"
+    },
+    {
+      "_id": "fld_list",
+      "parentId": "wrk_shopping_list",
+      "modified": 1705320010000,
+      "created": 1705320010000,
+      "name": "Shopping Lists",
+      "description": "Shopping list endpoints (uuCmd)",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1705320010000,
+      "_type": "request_group"
+    },
+    {
+      "_id": "wrk_shopping_list",
+      "parentId": null,
+      "modified": 1705320011000,
+      "created": 1705320011000,
+      "name": "Shopping List API",
+      "description": "Shopping List Backend API",
+      "scope": "collection",
+      "_type": "workspace"
+    },
+    {
+      "_id": "env_base",
+      "parentId": "wrk_shopping_list",
+      "modified": 1705320012000,
+      "created": 1705320012000,
+      "name": "Base Environment",
+      "data": {
+        "base_url": "http://localhost:3000",
+        "token": "",
+        "listId": "",
+        "itemId": "",
+        "memberId": ""
+      },
+      "dataPropertyOrder": {
+        "&": [
+          "base_url",
+          "token",
+          "listId",
+          "itemId",
+          "memberId"
+        ]
+      },
+      "color": null,
+      "isPrivate": false,
+      "metaSortKey": 1705320012000,
+      "_type": "environment"
+    }
+  ]
+}
+
+

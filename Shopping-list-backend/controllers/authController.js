@@ -6,7 +6,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { v4: uuidv4 } = require('uuid');
 const { registerInSchema, loginInSchema } = require('../models/schemas');
-const db = require('../mocks/database_mock'); 
+const db = require('../database/mongodb'); 
 
 const JWT_SECRET = 'your_super_secret_key'; // Stejný jako v authMiddleware
 

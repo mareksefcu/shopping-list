@@ -1,7 +1,7 @@
 // middleware/authMiddleware.js
 
 const jwt = require('jsonwebtoken');
-const db = require('../mocks/database_mock'); 
+const db = require('../database/mongodb'); 
 
 const JWT_SECRET = 'your_super_secret_key'; 
 
