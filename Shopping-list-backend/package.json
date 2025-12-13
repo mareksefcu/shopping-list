@@ -4,14 +4,17 @@
   "description": "Backend for Shopping List application",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "jest"
   },
   "dependencies": {
-    "express": "^4.18.2",
-    "joi": "^17.9.2",
     "bcrypt": "^5.1.0",
+    "express": "^4.18.2",
+    "jest": "^30.2.0",
+    "joi": "^17.9.2",
     "jsonwebtoken": "^9.0.0",
-    "uuid": "^9.0.0",
-    "mongoose": "^8.0.0"
+    "mongoose": "^8.0.0",
+    "supertest": "^7.1.4",
+    "uuid": "^9.0.0"
   }
 }

@@ -20,5 +20,10 @@ app.get('/', (req, res) => {
     res.send('Shopping List Backend is running!');
 });
 
+// Export app for testing
+module.exports = app;
+
 const PORT = 3000;
-app.listen(PORT, () => console.log(`Server bezi na http://localhost:${PORT}`));
+if (require.main === module) {
+    app.listen(PORT, () => console.log(`Server bezi na http://localhost:${PORT}`));
+}

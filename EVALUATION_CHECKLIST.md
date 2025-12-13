@@ -151,3 +151,6 @@ src/
 - Aplikace je připravena k odevzdání
 
 
+
+
+

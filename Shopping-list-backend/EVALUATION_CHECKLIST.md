@@ -250,3 +250,6 @@ Shopping-list-backend/
 - Aplikace je připravena k odevzdání
 
 
+
+
+

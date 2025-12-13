@@ -82,3 +82,6 @@ The Insomnia export includes these environment variables:
 - Check connection string in `config/database.js` or set `MONGODB_URI` environment variable
 
 
+
+
+

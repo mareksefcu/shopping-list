@@ -2,7 +2,7 @@
 // Main App component using API service instead of Firebase
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Plus, Trash2, CheckCircle2, ArrowLeft, Loader2, List, ClipboardList, Archive, RotateCcw, FolderOpen, LogOut } from 'lucide-react';
+import { Plus, Trash2, Loader2, List, Archive, RotateCcw, FolderOpen, LogOut } from 'lucide-react';
 import { authService, listService } from './services/apiService';
 import { setAuthToken, setUserId, getUserId, clearAuth, USE_MOCK_DATA } from './config/api';
 import { handleApiError } from './utils/errorHandler';
@@ -326,7 +326,7 @@ const App = () => {
 
     const handleRegister = async (email, password, name) => {
         try {
-            const response = await authService.register(email, password, name);
+            await authService.register(email, password, name);
             // After registration, automatically login
             const loginResponse = await authService.login(email, password);
             setAuthToken(loginResponse.token);
