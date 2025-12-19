@@ -3,14 +3,19 @@
 
 import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, CheckCircle2, ArrowLeft, Loader2, ClipboardList, Archive, RotateCcw } from 'lucide-react';
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { listService } from '../services/apiService';
 import { handleApiError } from '../utils/errorHandler';
+import { useTheme } from '../contexts/ThemeContext';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const ShoppingListDetail = ({ listId, onBack, archiveList, refreshLists }) => {
     const [listData, setListData] = useState(null);
     const [newItemName, setNewItemName] = useState('');
     const [isListLoading, setIsListLoading] = useState(true);
     const [error, setError] = useState('');
+    const { isDarkMode } = useTheme();
+    const { t } = useLanguage();
 
     // Load list data
     useEffect(() => {
@@ -118,11 +123,11 @@ const ShoppingListDetail = ({ listId, onBack, archiveList, refreshLists }) => {
 
     if (isListLoading || !listData) {
         return (
-            <div className="flex flex-col justify-center items-center min-h-screen bg-gray-50">
+            <div className="flex flex-col justify-center items-center min-h-screen bg-gray-50 dark:bg-gray-900">
                 <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
                     <Loader2 className="animate-spin text-white" size={32} />
                 </div>
-                <p className="text-gray-600 font-medium">Načítám detaily seznamu...</p>
+                <p className="text-gray-600 dark:text-gray-400 font-medium">Načítám detaily seznamu...</p>
             </div>
         );
     }
@@ -140,10 +145,16 @@ const ShoppingListDetail = ({ listId, onBack, archiveList, refreshLists }) => {
     const completionPercentage = totalItems > 0 ? (purchasedCount / totalItems) * 100 : 0;
     const isArchived = listData.isArchived || false;
 
+    // Pie chart data
+    const pieData = [
+        { name: 'Dokončeno', value: purchasedCount, color: '#10b981' },
+        { name: 'Zbývá', value: totalItems - purchasedCount, color: '#f59e0b' }
+    ].filter(item => item.value > 0);
+
     return (
         <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             {error && (
-                <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
+                <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm dark:bg-red-900 dark:border-red-700 dark:text-red-200">
                     {error}
                 </div>
             )}
@@ -155,7 +166,7 @@ const ShoppingListDetail = ({ listId, onBack, archiveList, refreshLists }) => {
                     className="flex items-center text-gray-600 hover:text-indigo-600 transition-colors font-medium group"
                 >
                     <ArrowLeft size={20} className="mr-2 group-hover:-translate-x-1 transition-transform" />
-                    Zpět na přehled
+                    {t('backToOverview')}
                 </button>
                 
                 <button
@@ -170,12 +181,12 @@ const ShoppingListDetail = ({ listId, onBack, archiveList, refreshLists }) => {
                     {isArchived ? (
                         <>
                             <RotateCcw size={18} />
-                            <span>Obnovit z archivu</span>
+                            <span>{t('restore')}</span>
                         </>
                     ) : (
                         <>
                             <Archive size={18} />
-                            <span>Archivovat</span>
+                            <span>{t('archive')}</span>
                         </>
                     )}
                 </button>
@@ -204,12 +215,12 @@ const ShoppingListDetail = ({ listId, onBack, archiveList, refreshLists }) => {
                                 </span>
                             )}
                         </div>
-                        <div className="flex items-center gap-4 text-sm text-gray-500">
-                            <span>{totalItems} {totalItems === 1 ? 'položka' : totalItems < 5 ? 'položky' : 'položek'}</span>
+                        <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+                            <span>{totalItems} {t('items', totalItems)}</span>
                             {totalItems > 0 && (
                                 <>
                                     <span>•</span>
-                                    <span className="font-semibold text-indigo-600">{purchasedCount} dokončeno</span>
+                                    <span className="font-semibold text-indigo-600">{purchasedCount} {t('completed')}</span>
                                 </>
                             )}
                         </div>
@@ -220,7 +231,7 @@ const ShoppingListDetail = ({ listId, onBack, archiveList, refreshLists }) => {
                 {totalItems > 0 && (
                     <div className="mt-6">
                         <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm font-medium text-gray-600">Průběh</span>
+                            <span className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('progress')}</span>
                             <span className="text-sm font-semibold text-indigo-600">{Math.round(completionPercentage)}%</span>
                         </div>
                         <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
@@ -228,6 +239,48 @@ const ShoppingListDetail = ({ listId, onBack, archiveList, refreshLists }) => {
                                 className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-500 rounded-full"
                                 style={{ width: `${completionPercentage}%` }}
                             />
+                        </div>
+                    </div>
+                )}
+
+                {/* Pie Chart */}
+                {totalItems > 0 && pieData.length > 0 && (
+                    <div className="mt-8 bg-white p-6 rounded-2xl shadow-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 text-center">Stav položek</h3>
+                        <div className="h-64">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <PieChart>
+                                    <Pie
+                                        data={pieData}
+                                        cx="50%"
+                                        cy="50%"
+                                        innerRadius={60}
+                                        outerRadius={100}
+                                        paddingAngle={5}
+                                        dataKey="value"
+                                    >
+                                        {pieData.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={entry.color} />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip
+                                        formatter={(value, name) => [`${value} položek`, name]}
+                                        labelStyle={{ color: isDarkMode ? '#f3f4f6' : '#374151' }}
+                                        contentStyle={{
+                                            backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
+                                            border: `1px solid ${isDarkMode ? '#374151' : '#e5e7eb'}`,
+                                            borderRadius: '8px',
+                                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                                            color: isDarkMode ? '#f3f4f6' : '#111827'
+                                        }}
+                                    />
+                                    <Legend
+                                        verticalAlign="bottom"
+                                        height={36}
+                                        iconType="circle"
+                                    />
+                                </PieChart>
+                            </ResponsiveContainer>
                         </div>
                     </div>
                 )}
@@ -246,7 +299,7 @@ const ShoppingListDetail = ({ listId, onBack, archiveList, refreshLists }) => {
                                 addItem();
                             }
                         }}
-                        placeholder="Přidat novou položku..."
+                        placeholder={t('addNewItem')}
                         className="flex-1 px-5 py-4 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 placeholder-gray-400 text-lg font-medium"
                     />
                     <button
@@ -255,7 +308,7 @@ const ShoppingListDetail = ({ listId, onBack, archiveList, refreshLists }) => {
                         disabled={!newItemName.trim()}
                         aria-label="Přidat položku"
                     >
-                        <Plus size={22} className="mr-2" /> Přidat
+                        <Plus size={22} className="mr-2" /> {t('add')}
                     </button>
                 </div>
             </div>
@@ -315,8 +368,8 @@ const ShoppingListDetail = ({ listId, onBack, archiveList, refreshLists }) => {
                         <div className="w-20 h-20 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
                             <ClipboardList size={40} className="text-indigo-500" />
                         </div>
-                        <h3 className="text-xl font-semibold text-gray-700 mb-2">Seznam je prázdný</h3>
-                        <p className="text-gray-500">Přidejte první položku výše a začněte nakupovat!</p>
+                        <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">{t('listEmpty')}</h3>
+                        <p className="text-gray-500 dark:text-gray-400">{t('addFirstItem')}</p>
                     </div>
                 )}
             </div>

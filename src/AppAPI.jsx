@@ -2,10 +2,13 @@
 // Main App component using API service instead of Firebase
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Plus, Trash2, Loader2, List, Archive, RotateCcw, FolderOpen, LogOut } from 'lucide-react';
+import { Plus, Trash2, Loader2, List, Archive, RotateCcw, FolderOpen, LogOut, Sun, Moon, Languages } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import { authService, listService } from './services/apiService';
 import { setAuthToken, setUserId, getUserId, clearAuth, USE_MOCK_DATA } from './config/api';
 import { handleApiError } from './utils/errorHandler';
+import { useTheme } from './contexts/ThemeContext';
+import { useLanguage } from './contexts/LanguageContext';
 import LoginForm from './components/LoginForm';
 import ShoppingListDetail from './components/ShoppingListDetailAPI';
 
@@ -111,6 +114,8 @@ const ShoppingListEntry = ({ list, onDelete, onSelect, onArchive }) => {
 const ShoppingListOverview = ({ shoppingLists, addList, deleteList, navigateToDetail, archiveList, onLogout }) => {
     const [newListInput, setNewListInput] = useState('');
     const [filter, setFilter] = useState('active');
+    const { isDarkMode, toggleTheme } = useTheme();
+    const { language, t, toggleLanguage } = useLanguage();
 
     const handleAddList = (e) => {
         e.preventDefault();
@@ -126,6 +131,22 @@ const ShoppingListOverview = ({ shoppingLists, addList, deleteList, navigateToDe
     const activeCount = shoppingLists.filter(list => !(list.isArchived || false)).length;
     const archivedCount = shoppingLists.filter(list => list.isArchived || false).length;
 
+    // Prepare chart data
+    const chartData = filteredLists.map(list => ({
+        name: list.name.length > 15 ? list.name.substring(0, 15) + '...' : list.name,
+        total: list.items?.length || 0,
+        completed: list.items?.filter(item => item.done).length || 0,
+        remaining: list.items?.filter(item => !item.done).length || 0
+    }));
+
+    const totalItems = shoppingLists.reduce((sum, list) => sum + (list.items?.length || 0), 0);
+    const completedItems = shoppingLists.reduce((sum, list) => sum + (list.items?.filter(item => item.done).length || 0), 0);
+
+    const pieData = [
+        { name: 'Dokončeno', value: completedItems, color: '#10b981' },
+        { name: 'Zbývá', value: totalItems - completedItems, color: '#f59e0b' }
+    ].filter(item => item.value > 0);
+
     return (
         <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             {/* Header Section */}
@@ -134,26 +155,42 @@ const ShoppingListOverview = ({ shoppingLists, addList, deleteList, navigateToDe
                     <div className="flex-1">
                         <div className="flex items-center justify-between mb-4">
                             <div>
-                                <h1 className="text-4xl font-bold text-gray-900 mb-2 flex items-center">
+                                <h1 className="text-4xl font-bold text-gray-900 mb-2 flex items-center dark:text-gray-100">
                                     <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center mr-4 shadow-lg">
                                         <List size={24} className="text-white" />
                                     </div>
-                                    Nákupní Seznamy
+                                    {t('shoppingLists')}
                                 </h1>
-                                <p className="text-gray-500 ml-16">
+                                <p className="text-gray-500 ml-16 dark:text-gray-400">
                                     {filter === 'active' 
-                                        ? `${activeCount} ${activeCount === 1 ? 'aktivní seznam' : activeCount < 5 ? 'aktivní seznamy' : 'aktivních seznamů'}`
-                                        : `${archivedCount} ${archivedCount === 1 ? 'archivovaný seznam' : archivedCount < 5 ? 'archivované seznamy' : 'archivovaných seznamů'}`
+                                        ? `${activeCount} ${t('activeLists', activeCount)}`
+                                        : `${archivedCount} ${t('archivedLists', archivedCount)}`
                                     }
                                 </p>
                             </div>
                             <button
                                 onClick={onLogout}
-                                className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors font-medium"
+                                className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors font-medium dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
                                 title="Odhlásit se"
                             >
                                 <LogOut size={18} />
                                 <span className="hidden sm:inline">Odhlásit</span>
+                            </button>
+                            <button
+                                onClick={toggleTheme}
+                                className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors font-medium dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                                title={isDarkMode ? "Přepnout na světlý režim" : "Přepnout na tmavý režim"}
+                            >
+                                {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
+                                <span className="hidden sm:inline">{isDarkMode ? t('lightMode') : t('darkMode')}</span>
+                            </button>
+                            <button
+                                onClick={toggleLanguage}
+                                className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors font-medium dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                                title={language === 'cs' ? "Switch to English" : "Přepnout na češtinu"}
+                            >
+                                <Languages size={18} />
+                                <span className="hidden sm:inline">{language.toUpperCase()}</span>
                             </button>
                         </div>
                     </div>
@@ -165,24 +202,107 @@ const ShoppingListOverview = ({ shoppingLists, addList, deleteList, navigateToDe
                         onClick={() => setFilter('active')}
                         className={`px-6 py-3 rounded-xl font-semibold flex items-center justify-center transition-all duration-300 ${
                             filter === 'active' 
-                                ? 'bg-white text-indigo-600 shadow-md scale-105' 
-                                : 'text-gray-600 hover:text-gray-800'
+                                ? 'bg-white text-indigo-600 shadow-md scale-105 dark:bg-gray-700 dark:text-indigo-400' 
+                                : 'text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200'
                         }`}
                     >
-                        <FolderOpen size={18} className="mr-2" /> Aktivní
+                        <FolderOpen size={18} className="mr-2" /> {t('active')}
                     </button>
                     <button
                         onClick={() => setFilter('archived')}
                         className={`px-6 py-3 rounded-xl font-semibold flex items-center justify-center transition-all duration-300 ${
                             filter === 'archived' 
-                                ? 'bg-white text-indigo-600 shadow-md scale-105' 
-                                : 'text-gray-600 hover:text-gray-800'
+                                ? 'bg-white text-indigo-600 shadow-md scale-105 dark:bg-gray-700 dark:text-indigo-400' 
+                                : 'text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200'
                         }`}
                     >
-                        <Archive size={18} className="mr-2" /> Archivované
+                        <Archive size={18} className="mr-2" /> {t('archived')}
                     </button>
                 </div>
             </div>
+
+            {/* Statistics Charts */}
+            {filteredLists.length > 0 && (
+                <div className="mb-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Bar Chart - Items per list */}
+                    <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 text-center">{t('itemsPerList')}</h3>
+                        <div className="h-64">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis 
+                                        dataKey="name" 
+                                        tick={{ fontSize: 12 }}
+                                        angle={-45}
+                                        textAnchor="end"
+                                        height={80}
+                                    />
+                                    <YAxis />
+                                    <Tooltip 
+                                        formatter={(value, name) => [
+                                            `${value} ${t('items', value)}`, 
+                                            name === 'total' ? 'Celkem' : name === 'completed' ? t('completedItems') : t('remainingItems')
+                                        ]}
+                                        labelStyle={{ color: isDarkMode ? '#f3f4f6' : '#374151' }}
+                                        contentStyle={{
+                                            backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
+                                            border: `1px solid ${isDarkMode ? '#374151' : '#e5e7eb'}`,
+                                            borderRadius: '8px',
+                                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                                            color: isDarkMode ? '#f3f4f6' : '#111827'
+                                        }}
+                                    />
+                                    <Bar dataKey="completed" stackId="a" fill="#10b981" name="Dokončeno" />
+                                    <Bar dataKey="remaining" stackId="a" fill="#f59e0b" name="Zbývá" />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </div>
+
+                    {/* Pie Chart - Overall completion */}
+                    {pieData.length > 0 && (
+                        <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 text-center">{t('overallStatus')}</h3>
+                            <div className="h-64">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <PieChart>
+                                        <Pie
+                                            data={pieData}
+                                            cx="50%"
+                                            cy="50%"
+                                            innerRadius={40}
+                                            outerRadius={80}
+                                            paddingAngle={5}
+                                            dataKey="value"
+                                        >
+                                            {pieData.map((entry, index) => (
+                                                <Cell key={`cell-${index}`} fill={entry.color} />
+                                            ))}
+                                        </Pie>
+                                        <Tooltip
+                                            formatter={(value, name) => [`${value} ${t('items', value)}`, name]}
+                                            labelStyle={{ color: isDarkMode ? '#f3f4f6' : '#374151' }}
+                                            contentStyle={{
+                                                backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
+                                                border: `1px solid ${isDarkMode ? '#374151' : '#e5e7eb'}`,
+                                                borderRadius: '8px',
+                                                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                                                color: isDarkMode ? '#f3f4f6' : '#111827'
+                                            }}
+                                        />
+                                        <Legend
+                                            verticalAlign="bottom"
+                                            height={36}
+                                            iconType="circle"
+                                        />
+                                    </PieChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
 
             {/* Create New List Form */}
             <form onSubmit={handleAddList} className="mb-8 bg-white p-2 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-shadow duration-300">
@@ -271,6 +391,8 @@ const App = () => {
     const [currentPage, setCurrentPage] = useState('list');
     const [selectedListId, setSelectedListId] = useState(null);
     const [error, setError] = useState('');
+    const { isDarkMode } = useTheme();
+    const { t } = useLanguage();
 
     // Check if user is already logged in
     useEffect(() => {
@@ -463,10 +585,10 @@ const App = () => {
     }
 
     return (
-        <div className="min-h-screen font-sans bg-gradient-to-br from-gray-50 to-gray-100">
+        <div className={`min-h-screen font-sans bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300`}>
             {USE_MOCK_DATA && (
-                <div className="bg-yellow-100 border-b border-yellow-400 text-yellow-800 text-center py-2 text-sm font-medium">
-                    ⚠️ Režim mock dat - pro reálná data nastavte REACT_APP_USE_MOCK=false
+                <div className="bg-yellow-100 border-b border-yellow-400 text-yellow-800 text-center py-2 text-sm font-medium dark:bg-yellow-900 dark:border-yellow-600 dark:text-yellow-200">
+                    ⚠️ {t('mockDataWarning')}
                 </div>
             )}
             <div className="pt-8 pb-16">
